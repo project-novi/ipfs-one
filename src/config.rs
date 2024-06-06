@@ -1,7 +1,7 @@
 use serde::Deserialize;
 
 fn default_bind_address() -> String {
-    "0.0.0.0:3000".to_owned()
+    "127.0.0.1:3345".to_owned()
 }
 
 fn default_gateways() -> Vec<String> {
