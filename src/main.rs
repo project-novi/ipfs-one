@@ -3,7 +3,7 @@ mod server;
 
 use axum::handler::Handler;
 use config::Config;
-use std::fs::File;
+use std::{fs::File, io};
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 
 #[tokio::main]
@@ -13,9 +13,11 @@ async fn main() {
         .with(tracing_subscriber::EnvFilter::from_default_env())
         .init();
 
-    let config: Config =
-        serde_yaml::from_reader(File::open("config.yaml").expect("cannot open config file"))
-            .expect("invalid config sfile");
+    let config: Config = match File::open("config.yaml") {
+        Err(err) if err.kind() == io::ErrorKind::NotFound => Config::default(),
+        Err(err) => panic!("cannot open config file: {err}"),
+        Ok(file) => serde_yaml::from_reader(file).expect("invalid config file"),
+    };
 
     let listener = tokio::net::TcpListener::bind(config.bind_address)
         .await
